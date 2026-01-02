@@ -210,5 +210,7 @@ import { dirname } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 if (process.argv[1] === __filename || process.argv[1]?.endsWith('incremental-sync.js')) {
-  incrementalSync().catch(() => process.exit(1));
+  incrementalSync()
+    .then(() => process.exit(0))
+    .catch(() => process.exit(1));
 }
