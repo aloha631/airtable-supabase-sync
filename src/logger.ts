@@ -15,10 +15,16 @@ export const logger = {
     console.warn(`[${new Date().toISOString()}] [WARN] ${message}`);
   },
 
-  error: (message: string, error?: Error) => {
+  error: (message: string, error?: any) => {
     console.error(`[${new Date().toISOString()}] [ERROR] ${message}`);
     if (error) {
-      console.error(error.stack);
+      if (error.stack) {
+        console.error(error.stack);
+      } else if (typeof error === 'object') {
+        console.error(JSON.stringify(error, null, 2));
+      } else {
+        console.error(error);
+      }
     }
   },
 };

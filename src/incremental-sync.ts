@@ -108,15 +108,11 @@ export async function incrementalSync() {
     // We'll fetch all records and filter in-memory, or use a "Last Modified" field if available
     // For now, fetching all and comparing is the most reliable approach
 
-    await base(tableIdentifier)
+    const records = await base(tableIdentifier)
       .select(selectOptions)
-      .eachPage((pageRecords, fetchNextPage) => {
-        allRecords.push(...pageRecords);
-        if (allRecords.length % 100 === 0) {
-          logger.info(`  Fetched ${allRecords.length} records so far...`);
-        }
-        fetchNextPage();
-      });
+      .all();
+
+    allRecords.push(...records);
 
     logger.success(`Fetched ${allRecords.length} total records from Airtable\n`);
 
