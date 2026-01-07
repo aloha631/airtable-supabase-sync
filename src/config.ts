@@ -24,6 +24,9 @@ export const config = {
     alertTo: process.env.EMAIL_ALERT_TO!,
     failureThreshold: parseInt(process.env.EMAIL_FAILURE_THRESHOLD || '3', 10),
   },
+  gemini: {
+    apiKey: process.env.GEMINI_API_KEY!,
+  },
   env: process.env.NODE_ENV || 'development',
 };
 
@@ -38,6 +41,7 @@ function validateConfig() {
     'SUPABASE_KEY',
     'RESEND_API_KEY',
     'EMAIL_ALERT_TO',
+    'GEMINI_API_KEY',
   ];
 
   const missing: string[] = [];
