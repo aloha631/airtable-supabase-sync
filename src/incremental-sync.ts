@@ -122,25 +122,18 @@ export async function incrementalSync() {
     const base = airtable.base(config.airtable.baseId);
     const tableIdentifier = config.airtable.tableId || config.airtable.tableName;
 
-    // Fetch records
+    // Fetch records with progress logging
     const allRecords: any[] = [];
     logger.info('Fetching records from Airtable...');
 
-    // Use filterByFormula to get only modified records if we have a last sync time
-    const selectOptions: any = {};
+    await base(tableIdentifier).select({}).eachPage((pageRecords, fetchNextPage) => {
+      allRecords.push(...pageRecords);
+      logger.info(`  ...Fetched ${allRecords.length} records so far`);
+      fetchNextPage();
+    });
 
-    // Note: Airtable doesn't support filtering by createdTime via API
-    // We'll fetch all records and filter in-memory, or use a "Last Modified" field if available
-    // For now, fetching all and comparing is the most reliable approach
-
-    const records = await base(tableIdentifier)
-      .select(selectOptions)
-      .all();
-
-    allRecords.push(...records);
     recordsChecked = allRecords.length;
-
-    logger.success(`Fetched ${allRecords.length} total records from Airtable\n`);
+    logger.success(`Successfully fetched ${allRecords.length} total records from Airtable\n`);
 
     // Filter records based on last sync time
     let recordsToSync = allRecords;
