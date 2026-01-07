@@ -10,8 +10,9 @@
 import Airtable from 'airtable';
 import { config } from './config.js';
 import { logger } from './logger.js';
-import { supabase, upsertCustomerInteractions } from './supabase-client.js';
-import type { CustomerInteraction } from './types.js';
+import { supabase, upsertCustomerInteractions, recordSyncHistory } from './supabase-client.js';
+import { checkAndSendAlert } from './alert-checker.js';
+import type { CustomerInteraction, SyncHistory } from './types.js';
 
 /**
  * Get the latest sync time from Supabase
@@ -57,6 +58,18 @@ function convertRecord(record: any): CustomerInteraction | null {
     return field ? String(field) : '';
   };
 
+  // Helper function to extract linked record IDs as array
+  const getLinkedIds = (field: any): string[] => {
+    if (Array.isArray(field)) {
+      // Filter out empty values and convert to strings
+      return field.filter(id => id).map(id => String(id));
+    }
+    if (field) {
+      return [String(field)];
+    }
+    return [];
+  };
+
   const customerName = getValue(fields['客戶名稱+國家']);
 
   // Skip records without customer name (internal documents)
@@ -64,14 +77,20 @@ function convertRecord(record: any): CustomerInteraction | null {
     return null;
   }
 
+  // Extract linked customer IDs
+  const linkedCustomers = getLinkedIds(fields['客戶']);
+
   return {
     airtable_id: record.id,
-    customer_id: getValue(fields['客戶']),
-    customer_name: customerName,
+    linked_customers: getLinkedIds(fields['客戶']),
+    customer_name_country: customerName,
     categories: getValue(fields['類別']) || undefined,
     summary_en: getValue(fields['簡述(en)']) || undefined,
     summary_cn: getValue(fields['簡述(cn)']) || undefined,
-    interaction_notes: getValue(fields['更新內容']) || undefined,
+    summary_idioma: getValue(fields['簡述(Idioma)']) || undefined,
+    update_content: getValue(fields['更新內容']) || undefined,
+    update_content_idioma: getValue(fields['更新內容(客戶語言)']) || undefined,
+    airtable_last_modified: getValue(fields['最後更新']) || undefined,
   };
 }
 
@@ -79,6 +98,12 @@ function convertRecord(record: any): CustomerInteraction | null {
  * Perform incremental sync
  */
 export async function incrementalSync() {
+  const syncStartTime = new Date();
+  let recordsChecked = 0;
+  let recordsToSyncCount = 0;
+  let syncSuccess = 0;
+  let syncFailed = 0;
+
   try {
     logger.info('=== Incremental Sync Started ===\n');
 
@@ -113,6 +138,7 @@ export async function incrementalSync() {
       .all();
 
     allRecords.push(...records);
+    recordsChecked = allRecords.length;
 
     logger.success(`Fetched ${allRecords.length} total records from Airtable\n`);
 
@@ -155,8 +181,20 @@ export async function incrementalSync() {
       logger.info(`Filtered to ${recordsToSync.length} modified/new records\n`);
     }
 
+    recordsToSyncCount = recordsToSync.length;
+
     if (recordsToSync.length === 0) {
       logger.success('✅ No changes detected. Database is up to date!');
+
+      // Record successful sync with no changes
+      await recordSyncHistory({
+        records_checked: recordsChecked,
+        records_inserted: 0,
+        records_updated: 0,
+        records_failed: 0,
+        status: 'success',
+      });
+
       return;
     }
 
@@ -175,6 +213,16 @@ export async function incrementalSync() {
 
     if (interactions.length === 0) {
       logger.success('✅ No valid records to sync.');
+
+      // Record sync with no valid records
+      await recordSyncHistory({
+        records_checked: recordsChecked,
+        records_inserted: 0,
+        records_updated: 0,
+        records_failed: 0,
+        status: 'success',
+      });
+
       return;
     }
 
@@ -182,20 +230,64 @@ export async function incrementalSync() {
     logger.info('Syncing to Supabase...');
     const { success, failed } = await upsertCustomerInteractions(interactions);
 
+    syncSuccess = success;
+    syncFailed = failed;
+
     // Summary
-    logger.success('\n=== Incremental Sync Complete ===');
-    logger.success(`Total records checked: ${allRecords.length}`);
-    logger.success(`Modified/New records: ${recordsToSync.length}`);
-    logger.success(`Valid records to sync: ${interactions.length}`);
-    logger.success(`Successfully synced: ${success}`);
-    if (failed > 0) {
-      logger.warn(`Failed: ${failed}`);
+    logger.success('\n=== Incremental Sync Summary ===');
+    logger.success(`- Total records fetched from Airtable: ${recordsChecked}`);
+    logger.success(`- Records modified/new since last sync: ${recordsToSyncCount}`);
+    logger.success(`- Valid records processed for sync: ${interactions.length}`);
+    logger.success(`- Successfully synced to Supabase: ${syncSuccess}`);
+
+    if (syncFailed > 0) {
+      logger.error(`- Failed to sync records: ${syncFailed}`);
+
+      // Record partial failure
+      await recordSyncHistory({
+        records_checked: recordsChecked,
+        records_inserted: 0,
+        records_updated: syncSuccess,
+        records_failed: syncFailed,
+        status: 'partial',
+        error_message: `${syncFailed} records failed in Supabase upsert`,
+      });
+
+      // Check for consecutive failures and send alert if needed
+      await checkAndSendAlert();
+
+      throw new Error(`Sync partially failed: ${syncFailed} records failed.`);
     }
 
-    logger.success('\n✅ Database is now up to date!');
+    // Record successful sync
+    await recordSyncHistory({
+      records_checked: recordsChecked,
+      records_inserted: 0,
+      records_updated: syncSuccess,
+      records_failed: 0,
+      status: 'success',
+    });
+
+    logger.success('\n✅ Incremental Sync Completed Successfully!');
 
   } catch (error) {
-    logger.error('Incremental sync failed:', error as Error);
+    logger.error('Incremental sync failed during execution:', error as Error);
+
+    // Record complete failure if not already recorded (e.g., from network error)
+    // We use a flag or check if history was already recorded in this run
+    // For simplicity, we just record it here if we haven't reached the success block
+    await recordSyncHistory({
+      records_checked: recordsChecked,
+      records_inserted: 0,
+      records_updated: syncSuccess,
+      records_failed: syncFailed || (recordsToSyncCount > 0 ? recordsToSyncCount : 0),
+      status: 'failed',
+      error_message: error instanceof Error ? error.message : String(error),
+    });
+
+    // Check for consecutive failures and send alert if needed
+    await checkAndSendAlert();
+
     throw error;
   }
 }

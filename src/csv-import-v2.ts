@@ -40,20 +40,22 @@ function parseCSV(filePath: string): CustomerInteraction[] {
   for (const record of records) {
     const r = record as any;
 
-    // Validate required fields (only airtable_id and customer_name are required)
-    if (!r.airtable_id || !r.customer_name) {
+    // Validate required fields (only airtable_id and customer_name_country are required)
+    if (!r.airtable_id || !r.customer_name_country) {
       logger.warn(`Skipping record with missing required fields: ${JSON.stringify(record)}`);
       continue;
     }
 
     interactions.push({
       airtable_id: r.airtable_id,
-      customer_id: r.customer_id || undefined,
-      customer_name: r.customer_name,
+      linked_customers: r.customer_id ? [r.customer_id] : undefined,
+      customer_name_country: r.customer_name_country,
       categories: r.categories || undefined,
       summary_en: r.summary_en || undefined,
       summary_cn: r.summary_cn || undefined,
-      interaction_notes: r.interaction_notes || undefined,
+      summary_idioma: r.summary_idioma || undefined,
+      update_content: r.update_content || undefined,
+      update_content_idioma: r.update_content_idioma || undefined,
     });
   }
 

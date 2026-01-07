@@ -25,6 +25,7 @@ export async function upsertCustomerInteractions(
     const batch = records.slice(i, i + batchSize);
 
     try {
+      console.log(`[${new Date().toISOString()}] [INFO] Processing batch ${Math.floor(i / batchSize) + 1}...`);
       const { error } = await supabase
         .from('customer_interactions')
         .upsert(batch, {
@@ -32,13 +33,14 @@ export async function upsertCustomerInteractions(
         });
 
       if (error) {
-        console.error('Batch upsert error:', error);
+        console.error(`[${new Date().toISOString()}] [ERROR] Batch upsert error details:`, JSON.stringify(error, null, 2));
         failed += batch.length;
       } else {
         success += batch.length;
+        console.log(`[${new Date().toISOString()}] [SUCCESS] Batch ${Math.floor(i / batchSize) + 1} synced successfully.`);
       }
-    } catch (error) {
-      console.error('Batch processing error:', error);
+    } catch (error: any) {
+      console.error(`[${new Date().toISOString()}] [ERROR] Batch processing unexpected error:`, error?.message || error);
       failed += batch.length;
     }
   }

@@ -1,0 +1,52 @@
+# generated: 2026-01-03
+# project: airtable syc to Supabase
+# project_key: ATS2S
+# tracking_system: bmad-bmm
+# story_location: _bmad-output/stories
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+
+generated: 2026-01-03
+project: airtable syc to Supabase
+project_key: ATS2S
+tracking_system: bmad-bmm
+story_location: _bmad-output/stories
+
+development_status:
+  epic-1: done
+  1-1-建立極簡開發環境與-supabase-schema: done
+  1-2-開發-csv-導入腳本並完成初始搬家: done
+  epic-1-retrospective: done
+
+  epic-2: in-progress
+  2-1-實現-airtable-api-抓取與分頁邏輯: done
+  2-2-實現基於-id-的增量-upsert-同步: done
+  2-3-處理-airtable-連結欄位-link-data: done
+  2-4-部署至-zeabur-並設置-cron-job: done
+  epic-2-retrospective: optional
+
+  epic-3: in-progress
+  3-1-實現同步歷史記錄表與日誌系統: done
+  3-2-實現關鍵失敗-email-自動告警: done
+  3-3-數據索引優化與-ai-查詢驗證: done
+  epic-3-retrospective: optional

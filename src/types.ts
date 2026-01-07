@@ -22,12 +22,16 @@ export interface AirtableRecord {
 export interface CustomerInteraction {
   id?: number;
   airtable_id: string;
-  customer_id?: string;   // Airtable 客戶 record ID (e.g., "recPyRSvgATHNbuoq")
-  customer_name: string;  // Format: "客戶名稱 + 國家"
-  categories?: string;    // Renamed from 'topic' to 'categories' (optional)
+  customer_id?: string;   // DEPRECATED: Use linked_customers instead
+  linked_customers?: string[];  // Array of Airtable customer record IDs (JSONB)
+  customer_name_country: string; // Format: "客戶名稱 + 國家"
+  categories?: string;           // Renamed from 'topic' to 'categories' (optional)
   summary_en?: string;
   summary_cn?: string;
-  interaction_notes?: string;
+  summary_idioma?: string;
+  update_content?: string;       // Renamed from 'interaction_notes'
+  update_content_idioma?: string; // Renamed from 'notes_idioma'
+  airtable_last_modified?: string; // New field
   created_at?: string;
   updated_at?: string;
   last_synced?: string;
@@ -49,9 +53,11 @@ export interface SyncHistory {
 export interface CSVRow {
   airtable_id: string;
   customer_id?: string;   // Airtable 客戶 record ID
-  customer_name: string;
-  categories?: string;    // Renamed from 'topic' to 'categories' (optional)
+  customer_name_country: string;
+  categories?: string;
   summary_en?: string;
   summary_cn?: string;
-  interaction_notes?: string;
+  summary_idioma?: string;
+  update_content?: string;
+  update_content_idioma?: string;
 }

@@ -5,7 +5,7 @@
 import dotenv from 'dotenv';
 
 // Load environment variables from .env file
-dotenv.config();
+dotenv.config({ override: true });
 
 export const config = {
   airtable: {
@@ -19,7 +19,10 @@ export const config = {
     key: process.env.SUPABASE_KEY!,
   },
   email: {
+    resendApiKey: process.env.RESEND_API_KEY!,
+    alertFrom: process.env.EMAIL_ALERT_FROM || 'noreply@yourdomain.com',
     alertTo: process.env.EMAIL_ALERT_TO!,
+    failureThreshold: parseInt(process.env.EMAIL_FAILURE_THRESHOLD || '3', 10),
   },
   env: process.env.NODE_ENV || 'development',
 };
@@ -33,6 +36,7 @@ function validateConfig() {
     'AIRTABLE_BASE_ID',
     'SUPABASE_URL',
     'SUPABASE_KEY',
+    'RESEND_API_KEY',
     'EMAIL_ALERT_TO',
   ];
 
