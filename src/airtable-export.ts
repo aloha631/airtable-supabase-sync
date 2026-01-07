@@ -52,7 +52,7 @@ function escapeCSV(value: any): string {
  */
 function convertToCSV(records: AirtableRecord[]): string {
   // CSV header
-  let csv = 'airtable_id,customer_name,topic,summary_en,summary_cn,interaction_notes\n';
+  let csv = 'airtable_id,customer_name_country,categories,summary_en,summary_cn,update_content\n';
 
   // CSV rows
   for (const record of records) {

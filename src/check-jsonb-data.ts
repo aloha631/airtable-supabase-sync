@@ -18,7 +18,7 @@ async function checkJSONBData() {
   // Get records with linked_customers data
   const { data: records, error } = await supabase
     .from('customer_interactions')
-    .select('airtable_id, customer_name, customer_id, linked_customers')
+    .select('airtable_id, customer_name_country, linked_customers')
     .not('linked_customers', 'is', null)
     .order('last_synced', { ascending: false })
     .limit(10);
@@ -32,8 +32,8 @@ async function checkJSONBData() {
   console.log('-'.repeat(80));
 
   if (records && records.length > 0) {
-    records.forEach((record, index) => {
-      console.log(`\n[${index + 1}] ${record.customer_name}`);
+    records.forEach((record: any, index: number) => {
+      console.log(`\n[${index + 1}] ${record.customer_name_country}`);
       console.log(`    Airtable ID: ${record.airtable_id}`);
       console.log(`    Old customer_id: ${record.customer_id || 'N/A'}`);
       console.log(`    New linked_customers: ${JSON.stringify(record.linked_customers)}`);
@@ -59,7 +59,7 @@ async function checkJSONBData() {
   // Check for records with multiple links
   const allRecords = await supabase
     .from('customer_interactions')
-    .select('airtable_id, customer_name, linked_customers')
+    .select('airtable_id, customer_name_country, linked_customers')
     .not('linked_customers', 'is', null);
 
   if (allRecords.data) {
@@ -74,8 +74,8 @@ async function checkJSONBData() {
 
     if (multiLinked.length > 0) {
       console.log('\n🎯 Records with multiple links:');
-      multiLinked.forEach(r => {
-        console.log(`   - ${r.customer_name}: ${r.linked_customers?.length} links`);
+      multiLinked.forEach((r: any) => {
+        console.log(`   - ${r.customer_name_country}: ${r.linked_customers?.length} links`);
       });
     }
   }

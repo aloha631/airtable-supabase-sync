@@ -40,10 +40,10 @@ async function analyzeCustomerInteractions() {
   console.log('📈 Analysis 2: Customer Engagement Analysis');
   console.log('==========================================');
   data.forEach(record => {
-    const noteLength = record.interaction_notes?.length || 0;
+    const noteLength = record.update_content?.length || 0;
     const engagementLevel = noteLength > 200 ? '🔥 High' :
-                           noteLength > 100 ? '⚡ Medium' : '📝 Low';
-    console.log(`  ${record.customer_name} (${record.categories}): ${engagementLevel}`);
+      noteLength > 100 ? '⚡ Medium' : '📝 Low';
+    console.log(`  ${record.customer_name_country} (${record.categories}): ${engagementLevel}`);
     console.log(`    Note length: ${noteLength} characters`);
   });
   console.log('');
@@ -56,11 +56,11 @@ async function analyzeCustomerInteractions() {
   console.log('  1. 客戶需求分析:');
   data.forEach(record => {
     if (record.categories === '產品詢價') {
-      console.log(`     - ${record.customer_name} 正在評估產品，建議主動提供報價`);
+      console.log(`     - ${record.customer_name_country} 正在評估產品，建議主動提供報價`);
     } else if (record.categories === '技術支援') {
-      console.log(`     - ${record.customer_name} 需要技術協助，已成功解決問題`);
+      console.log(`     - ${record.customer_name_country} 需要技術協助，已成功解決問題`);
     } else if (record.categories === '合作洽談') {
-      console.log(`     - ${record.customer_name} 是潛在合作夥伴，需要準備提案`);
+      console.log(`     - ${record.customer_name_country} 是潛在合作夥伴，需要準備提案`);
     }
   });
   console.log('');

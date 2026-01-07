@@ -44,7 +44,7 @@ async function analyzeData() {
     // Customer distribution (top 20)
     const customerCount: Record<string, number> = {};
     allData.forEach(record => {
-      const name = record.customer_name || 'Unknown';
+      const name = record.customer_name_country || 'Unknown';
       customerCount[name] = (customerCount[name] || 0) + 1;
     });
 
@@ -61,19 +61,19 @@ async function analyzeData() {
     // Data quality check
     console.log('✅ Data Quality Check:');
     console.log('─'.repeat(80));
-    const withCustomerId = allData.filter(r => r.customer_id).length;
+    const withLinkedCustomers = allData.filter(r => r.linked_customers && r.linked_customers.length > 0).length;
     const withSummaryEN = allData.filter(r => r.summary_en).length;
     const withSummaryCN = allData.filter(r => r.summary_cn).length;
-    const withNotes = allData.filter(r => r.interaction_notes).length;
+    const withNotes = allData.filter(r => r.update_content).length;
 
-    console.log(`  Records with Customer ID:     ${withCustomerId} / ${total} (${((withCustomerId/total)*100).toFixed(1)}%)`);
-    console.log(`  Records with Summary (EN):    ${withSummaryEN} / ${total} (${((withSummaryEN/total)*100).toFixed(1)}%)`);
-    console.log(`  Records with Summary (CN):    ${withSummaryCN} / ${total} (${((withSummaryCN/total)*100).toFixed(1)}%)`);
-    console.log(`  Records with Notes:           ${withNotes} / ${total} (${((withNotes/total)*100).toFixed(1)}%)`);
+    console.log(`  Records with Linked Customers: ${withLinkedCustomers} / ${total} (${((withLinkedCustomers / total) * 100).toFixed(1)}%)`);
+    console.log(`  Records with Summary (EN):    ${withSummaryEN} / ${total} (${((withSummaryEN / total) * 100).toFixed(1)}%)`);
+    console.log(`  Records with Summary (CN):    ${withSummaryCN} / ${total} (${((withSummaryCN / total) * 100).toFixed(1)}%)`);
+    console.log(`  Records with Notes:           ${withNotes} / ${total} (${((withNotes / total) * 100).toFixed(1)}%)`);
     console.log('');
 
     // Unique customers
-    const uniqueCustomers = new Set(allData.map(r => r.customer_id).filter(Boolean));
+    const uniqueCustomers = new Set(allData.flatMap(r => r.linked_customers || []).filter(Boolean));
     console.log(`📇 Unique Customers: ${uniqueCustomers.size}`);
     console.log('');
 

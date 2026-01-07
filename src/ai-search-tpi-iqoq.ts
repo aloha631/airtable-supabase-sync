@@ -17,7 +17,7 @@ async function searchTPIIQOQ() {
     const { data: tpiRecords, error: tpiError } = await supabase
       .from('customer_interactions')
       .select('*')
-      .ilike('customer_name', '%TPI%');
+      .ilike('customer_name_country', '%TPI%');
 
     if (tpiError) {
       logger.error('Query failed:', tpiError);
@@ -29,7 +29,7 @@ async function searchTPIIQOQ() {
     // Step 2: Filter for IQ OQ related content
     logger.info('Step 2: Filtering for IQ/OQ related content...');
     const iqoqRecords = tpiRecords?.filter(record => {
-      const searchText = `${record.summary_en} ${record.summary_cn} ${record.interaction_notes}`.toLowerCase();
+      const searchText = `${record.summary_en} ${record.summary_cn} ${record.update_content}`.toLowerCase();
       return searchText.includes('iq') || searchText.includes('oq');
     });
 
@@ -44,14 +44,14 @@ async function searchTPIIQOQ() {
       iqoqRecords.forEach((record, index) => {
         console.log(`Record ${index + 1}:`);
         console.log(`${'─'.repeat(80)}`);
-        console.log(`Customer: ${record.customer_name}`);
-        console.log(`Customer ID: ${record.customer_id}`);
+        console.log(`Customer: ${record.customer_name_country}`);
+        console.log(`Linked Customers: ${record.linked_customers?.join(', ')}`);
         console.log(`Category: ${record.categories}`);
         console.log(`Summary (EN): ${record.summary_en || 'N/A'}`);
         console.log(`Summary (CN): ${record.summary_cn || 'N/A'}`);
         console.log('');
         console.log('Interaction Notes:');
-        console.log(record.interaction_notes || 'N/A');
+        console.log(record.update_content || 'N/A');
         console.log('');
         console.log(`Airtable Record: ${record.airtable_id}`);
         console.log(`${'='.repeat(80)}\n`);
@@ -62,10 +62,10 @@ async function searchTPIIQOQ() {
       console.log('');
 
       iqoqRecords.forEach(record => {
-        console.log(`📌 ${record.customer_name} - ${record.summary_cn || record.summary_en}`);
+        console.log(`📌 ${record.customer_name_country} - ${record.summary_cn || record.summary_en}`);
 
         // Extract key information
-        const notes = record.interaction_notes || '';
+        const notes = record.update_content || '';
 
         // Look for dates
         const dateMatch = notes.match(/\d{4}-\d{2}-\d{2}|\d{4}年\d{1,2}月\d{1,2}日/);

@@ -27,11 +27,11 @@ async function main() {
     console.log('========================\n');
 
     data?.forEach((record, index) => {
-      console.log(`${index + 1}. ${record.customer_name} - ${record.categories}`);
-      console.log(`   Customer ID: ${record.customer_id || 'N/A'}`);
+      console.log(`${index + 1}. ${record.customer_name_country} - ${record.categories}`);
+      console.log(`   Linked Customers: ${record.linked_customers?.join(', ') || 'N/A'}`);
       console.log(`   Summary (EN): ${record.summary_en || 'N/A'}`);
       console.log(`   Summary (CN): ${record.summary_cn || 'N/A'}`);
-      console.log(`   Notes: ${record.interaction_notes?.substring(0, 100)}...`);
+      console.log(`   Notes: ${record.update_content?.substring(0, 100)}...`);
       console.log('');
     });
 
