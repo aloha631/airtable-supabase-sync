@@ -3,6 +3,7 @@
  * Runs incremental sync every 2 hours
  */
 
+import 'dotenv/config';
 import { incrementalSync } from './incremental-sync.js';
 import { logger } from './logger.js';
 

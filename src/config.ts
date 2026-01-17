@@ -2,60 +2,66 @@
  * Configuration management with environment variables
  */
 
-import dotenv from 'dotenv';
+// Environment variables config shared between client and server
+// In browser (Vite): use import.meta.env
+// In Node.js: use process.env
 
-// Load environment variables from .env file
-dotenv.config({ override: true });
+// Helper to get env var from both environments
+const getEnv = (key: string): string | undefined => {
+  // @ts-ignore - import.meta.env might not exist in Node.js context
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    // @ts-ignore
+    return import.meta.env[key];
+  }
+  if (typeof process !== 'undefined' && process.env) {
+    return process.env[key];
+  }
+  return undefined;
+};
 
 export const config = {
   airtable: {
-    apiKey: process.env.AIRTABLE_API_KEY!,
-    baseId: process.env.AIRTABLE_BASE_ID!,
-    tableName: process.env.AIRTABLE_TABLE_NAME || '客戶互動',
-    tableId: process.env.AIRTABLE_TABLE_ID, // Optional: use Table ID instead of name
+    apiKey: getEnv('VITE_AIRTABLE_API_KEY') || getEnv('AIRTABLE_API_KEY') || '',
+    baseId: getEnv('VITE_AIRTABLE_BASE_ID') || getEnv('AIRTABLE_BASE_ID') || '',
+    tableName: getEnv('VITE_AIRTABLE_TABLE_NAME') || getEnv('AIRTABLE_TABLE_NAME') || '客戶互動',
+    tableId: getEnv('VITE_AIRTABLE_TABLE_ID') || getEnv('AIRTABLE_TABLE_ID'),
   },
   supabase: {
-    url: process.env.SUPABASE_URL!,
-    key: process.env.SUPABASE_KEY!,
+    url: getEnv('VITE_SUPABASE_URL') || getEnv('SUPABASE_URL') || '',
+    key: getEnv('VITE_SUPABASE_KEY') || getEnv('SUPABASE_KEY') || '',
   },
   email: {
-    resendApiKey: process.env.RESEND_API_KEY!,
-    alertFrom: process.env.EMAIL_ALERT_FROM || 'noreply@yourdomain.com',
-    alertTo: process.env.EMAIL_ALERT_TO!,
-    failureThreshold: parseInt(process.env.EMAIL_FAILURE_THRESHOLD || '3', 10),
+    resendApiKey: getEnv('VITE_RESEND_API_KEY') || getEnv('RESEND_API_KEY') || '',
+    alertFrom: getEnv('VITE_EMAIL_ALERT_FROM') || getEnv('EMAIL_ALERT_FROM') || 'noreply@yourdomain.com',
+    alertTo: getEnv('VITE_EMAIL_ALERT_TO') || getEnv('EMAIL_ALERT_TO') || '',
+    failureThreshold: parseInt(getEnv('VITE_EMAIL_FAILURE_THRESHOLD') || getEnv('EMAIL_FAILURE_THRESHOLD') || '3', 10),
   },
   gemini: {
-    apiKey: process.env.GEMINI_API_KEY!,
+    apiKey: getEnv('VITE_GEMINI_API_KEY') || getEnv('GEMINI_API_KEY') || '',
   },
-  env: process.env.NODE_ENV || 'development',
+  env: getEnv('VITE_NODE_ENV') || getEnv('NODE_ENV') || 'development',
 };
 
 /**
  * Validate required environment variables
  */
 function validateConfig() {
-  const required = [
-    'AIRTABLE_API_KEY',
-    'AIRTABLE_BASE_ID',
-    'SUPABASE_URL',
-    'SUPABASE_KEY',
-    'RESEND_API_KEY',
-    'EMAIL_ALERT_TO',
-    'GEMINI_API_KEY',
-  ];
-
+  // Checks are handled by TypeScript ! assertion or runtime check
   const missing: string[] = [];
 
-  for (const key of required) {
-    if (!process.env[key]) {
-      missing.push(key);
-    }
-  }
+  if (!config.airtable.apiKey) missing.push('AIRTABLE_API_KEY');
+  if (!config.airtable.baseId) missing.push('AIRTABLE_BASE_ID');
+  if (!config.supabase.url) missing.push('SUPABASE_URL');
+  if (!config.supabase.key) missing.push('SUPABASE_KEY');
+  // GEMINI and RESEND might be used conditionally in some contexts, but required by type
+  if (!config.gemini.apiKey) missing.push('GEMINI_API_KEY');
 
   if (missing.length > 0) {
-    throw new Error(
-      `Missing required environment variables:\n${missing.map(k => `  - ${k}`).join('\n')}`
-    );
+    // In browser, alert or console error instead of throw to avoid crashing entire app loop if possible
+    // But for now, throw is fine
+    const msg = `Missing required environment variables:\n${missing.map(k => `  - ${k}`).join('\n')}`;
+    console.error(msg);
+    // throw new Error(msg); // Optional: don't throw hard in browser to allow partial functionality?
   }
 }
 

@@ -3,6 +3,7 @@
  * Executes incremental sync from Airtable to Supabase
  */
 
+import 'dotenv/config';
 import { incrementalSync } from './incremental-sync.js';
 import { logger } from './logger.js';
 
