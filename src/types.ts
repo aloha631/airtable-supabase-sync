@@ -24,7 +24,9 @@ export interface CustomerInteraction {
   airtable_id: string;
   customer_id?: string;   // DEPRECATED: Use linked_customers instead
   linked_customers?: string[];  // Array of Airtable customer record IDs (JSONB)
-  customer_name_country: string; // Format: "客戶名稱 + 國家"
+  customer_name_country: string; // Format: "客戶名稱 + 國家" (kept for backward compatibility)
+  customer_name?: string;        // Customer name (from Airtable 客戶名稱)
+  country?: string;              // Country (from Airtable 國家)
   categories?: string;           // Renamed from 'topic' to 'categories' (optional)
   summary_en?: string;
   summary_cn?: string;

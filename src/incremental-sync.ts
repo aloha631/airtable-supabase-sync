@@ -7,6 +7,7 @@
  * 3. Upsert only changed records to Supabase
  */
 
+import 'dotenv/config';
 import Airtable from 'airtable';
 import { config } from './config.js';
 import { logger } from './logger.js';
@@ -70,10 +71,12 @@ function convertRecord(record: any): CustomerInteraction | null {
     return [];
   };
 
-  const customerName = getValue(fields['客戶名稱+國家']);
+  const customerNameCountry = getValue(fields['客戶名稱+國家']);
+  const customerName = getValue(fields['客戶名稱']);
+  const country = getValue(fields['國家']);
 
   // Skip records without customer name (internal documents)
-  if (!customerName) {
+  if (!customerNameCountry && !customerName) {
     return null;
   }
 
@@ -83,7 +86,9 @@ function convertRecord(record: any): CustomerInteraction | null {
   return {
     airtable_id: record.id,
     linked_customers: getLinkedIds(fields['客戶']),
-    customer_name_country: customerName,
+    customer_name_country: customerNameCountry || `${customerName} (${country})`,
+    customer_name: customerName || undefined,
+    country: country || undefined,
     categories: getValue(fields['類別']) || undefined,
     summary_en: getValue(fields['簡述(en)']) || undefined,
     summary_cn: getValue(fields['簡述(cn)']) || undefined,

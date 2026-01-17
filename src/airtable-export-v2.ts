@@ -43,6 +43,9 @@ function convertToCSV(records: any[]): string {
       linked_customers: fields['客戶'] || [],
       // Using field ID for reliability: fld8rT1S04XF4jHAz = 客戶名稱+國家
       customer_name_country: getValue(fields['客戶名稱+國家']),
+      // Separate customer name and country fields
+      customer_name: getValue(fields['客戶名稱']),
+      country: getValue(fields['國家']),
       categories: getValue(fields['類別']),
       summary_en: getValue(fields['簡述(en)']),
       summary_cn: getValue(fields['簡述(cn)']),
@@ -57,6 +60,8 @@ function convertToCSV(records: any[]): string {
     columns: [
       { key: 'airtable_id', header: 'airtable_id' },
       { key: 'customer_name_country', header: 'customer_name_country' },
+      { key: 'customer_name', header: 'customer_name' },
+      { key: 'country', header: 'country' },
       { key: 'categories', header: 'categories' },
       { key: 'summary_en', header: 'summary_en' },
       { key: 'summary_cn', header: 'summary_cn' },

@@ -13,7 +13,7 @@ export const insightEngine = {
         // 1. Fetch records from last 1 month
         const { data: records, error } = await supabase
             .from('customer_interactions')
-            .select('customer_name_country, update_content, airtable_id, updated_at')
+            .select('customer_name_country, customer_name, country, update_content, airtable_id, updated_at')
             .gt('updated_at', oneMonthAgo.toISOString())
             .order('updated_at', { ascending: false });
 
@@ -36,8 +36,8 @@ export const insightEngine = {
         // 3. Enhance with Gemini (Optional batch summary can be added here)
         return ranked.map(r => ({
             airtable_id: r.airtable_id,
-            customer_name: r.customer_name_country,
-            country: 'N/A', // Data is combined in customer_name_country
+            customer_name: r.customer_name || r.customer_name_country,
+            country: r.country || 'N/A',
             summary: r.update_content?.substring(0, 100) + '...',
             reason: r.score >= 50 ? '積極討論設備規格' : '近期有商務報價需求',
             status: 'unprocessed'

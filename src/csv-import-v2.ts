@@ -50,6 +50,8 @@ function parseCSV(filePath: string): CustomerInteraction[] {
       airtable_id: r.airtable_id,
       linked_customers: r.customer_id ? [r.customer_id] : undefined,
       customer_name_country: r.customer_name_country,
+      customer_name: r.customer_name || undefined,
+      country: r.country || undefined,
       categories: r.categories || undefined,
       summary_en: r.summary_en || undefined,
       summary_cn: r.summary_cn || undefined,
